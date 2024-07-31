@@ -1,11 +1,11 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-basic-pages',
   templateUrl: './basic-pages.component.html',
 })
-export class BasicPagesComponent {
+export class BasicPagesComponent implements OnInit {
 
   // public myform: FormGroup = new FormGroup({
   //   name: new FormGroup('', [], []),
@@ -35,10 +35,38 @@ export class BasicPagesComponent {
     });
   }
 
-  onSave(): void {
-    if (this.myform.invalid) return;
-    console.log(this.myform.value);
-
+  ngOnInit(): void {
     this.myform.reset();
+  }
+
+  isValidField(field: string): boolean | null {
+    return this.myform.controls[field].errors
+      && this.myform.controls[field].touched;
+  }
+
+  getFieldError(field: string): string | null {
+    if (!this.myform.controls[field]) {
+      return null;
+    }
+    const errors = this.myform.controls[field].errors || {};
+
+    for (const key of Object.keys(errors)) {
+      switch (key) {
+        case 'required':
+          return 'Este campo es requerido';
+        case 'minlength':
+          return `Minimo ${errors['minlength'].requiredLength} caracteres`;
+      }
+
+    }
+    return null;
+  }
+
+  onSave(): void {
+    if (this.myform.invalid) {
+      this.myform.markAllAsTouched();
+      return;
+    };
+    console.log(this.myform.value);
   }
 }
